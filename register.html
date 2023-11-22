@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Authentication</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <form id="auth-form" class="w-50 mt-5">
+            <h2 class="mb-4">Register</h2>
+            <div class="mb-3">
+                <label for="fnameInput" class="form-label">First Name:</label>
+                <input type="text" class="form-control" id="fnameInput" required>
+            </div>
+            <div class="mb-3">
+                <label for="lnameInput" class="form-label">Last Name:</label>
+                <input type="text" class="form-control" id="lnameInput" required>
+            </div>
+            <div class="mb-3">
+                <label for="emailInput" class="form-label">Email address:</label>
+                <input type="email" class="form-control" id="emailInput" required>
+            </div>
+            <div class="mb-3">
+                <label for="passwordInput" class="form-label">Password:</label>
+                <input type="password" class="form-control" id="passwordInput" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Register</button>
+            <p class="login" a href = "login.html">I already have an account</p>
+            
+
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAPSOao0ucLNPKwXk64e2rvglxHHJ_pDBk",
+            authDomain: "helpdeskauth-67a6f.firebaseapp.com",
+          databaseURL: "https://helpdeskauth-67a6f-default-rtdb.firebaseio.com",
+          projectId: "helpdeskauth-67a6f",
+          storageBucket: "helpdeskauth-67a6f.appspot.com",
+          messagingSenderId: "660204349055",
+          appId: "1:660204349055:web:92f9cc37e7a3ae8d46814a"
+        };
+        const loginBtn = document.getElementById('login');
+        createUserBtn.addEventListener('click', () => {
+            window.location.href = 'login.html';
+        });
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase();
+        const auth = getAuth(app);
+
+        const authForm = document.getElementById('auth-form');
+        const fnameInput = document.getElementById('fnameInput');
+        const lnameInput = document.getElementById('lnameInput');
+        const emailInput = document.getElementById('emailInput');
+        const passwordInput = document.getElementById('passwordInput');
+
+        authForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const fname = fnameInput.value;
+            const lname = lnameInput.value;
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            // Create user with email and password
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    
+                    // Send email verification
+                    sendEmailVerification(user)
+                        .then(() => {
+                            // Save user information to the database
+                            const userRef = ref(db, 'UsersAuthList/' + user.uid);
+                            set(userRef, {
+                                firstname: fname,
+                                lastname: lname,
+                                email: email
+                            });
+
+                            alert('Registration successful. Please check your email for verification.');
+                        })
+                        .catch((error) => {
+                            console.error('Error sending email verification:', error.message);
+                        });
+                })
+                .catch((error) => {
+                    console.error('Registration error:', error.message);
+                });
+        });
+    </script>
+</body>
+</html>
